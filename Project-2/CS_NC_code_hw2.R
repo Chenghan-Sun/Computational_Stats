@@ -13,7 +13,7 @@ path_src_file_test = "test.data.csv"
 src_train = read.csv(path_src_file_train)
 src_test = read.csv(path_src_file_test)
 
-# Part (a)
+############ Part (a) ############
 # Build a linear model on the training data using lm() by regessing the housing price on
 # these variables: bedrooms, bathrooms, sqft living, and sqft lot.
 linear_model_a = lm(price ~ bedrooms + bathrooms + sqft_living + sqft_lot, data=src_train)
@@ -34,7 +34,7 @@ print(paste("The R^2 of the model on test data = ", r_2_test))  # R^2 of test se
 # [1] "The R^2 of the model on test data =  0.50499446140371"
 
 
-# Part (b)
+############ Part (b) ############
 # define paths and load the resource datasets
 path_src_file_fancy = "fancyhouse.csv"
 path_src_file_price = "housingprice.csv"
@@ -48,7 +48,7 @@ print(paste("The estimated price of Bill Gates’ house on the Linear model = ",
 # [1] "The estimated price of Bill Gates’ house on the Linear model =  15436769.5382226"
 
 
-# Part (c)
+############ Part (c) ############
 # feature engineering
 # Add another variable by multiplying the number of bedrooms by the number of bathrooms
 linear_model_c = lm(price ~ bedrooms*bathrooms + sqft_living + sqft_lot, data=src_train)  # model with interaction term
@@ -66,71 +66,108 @@ print(paste("The R^2 of the improved model on test data = ", r_2_test_improve)) 
 # [1] "The R^2 of the improved model on test data =  0.510535545859055"
 
 
-# Part (d)
+############ Part (d) ############
 # Using gradient descent algorithm on the sample-based least-squares objective function, to
 # estimate the OLS regression parameter vector
 
-# In order to apply gradient descent algorithm, make a function as step size finder
+# In order to apply gradient descent algorithm, make a function as step size finder by concept of bounded eigenvalues
 select_eta = function(data_X) {
   # Params
     # data_X: input data as a matrix
   # Return:
     # eta: selected step size 
-  eigen_vals = eigen(t(data_X) %*% data_X)
-  eta = 2 / (min(eigen_vals$values) + max(eigen_vals$values))
+  eigen_lambs = eigen(t(data_X) %*% data_X)
+  eta = 2 / (min(eigen_lambs$values) + max(eigen_lambs$values))
   return(eta)
 }
 
 # find step size eta candidate
-features = c("bedrooms", "bathrooms", "sqft_living", "sqft_lot", "price")
-data_X = as.matrix(src_train[features])
-selected_eta = select_eta(data_X)
+# First extract and standardize the design matrix X
+data_X_global = model.matrix(linear_model_a)
+data_X_sd_global = scale(data_X_global)
+data_X_sd_global = cbind(1, data_X_sd_global[, -1])
+selected_eta = select_eta(data_X_sd_global)
 print(paste("The step size candidate = ", selected_eta))
+# output
+# [1] "The step size candidate =  5.31096932523487e-05"
 
-# Here implement gradient descent algorithm 
-gradient_descent = function(data_X, res_y, eta, grad_tol=10^(-5), maxiters=10^4, standardize=TRUE) {
+# Here implement the gradient descent algorithm 
+gradient_descent = function(data_X, res_y, eta=5.31e-05, grad_tol=10^(-5), maxiters=10^4, standardize=TRUE) {
   # Params:
     # data_X: input data as a matrix
-    # res_y: 
+    # res_y: observation variables 
     # eta: step size --> a constant 
     # grad_tol: tolerance of the error difference for norm of gradient 
     # maxiters: maximum number of iterations 
-    # standardize: 
+    # standardize: standardize the dataset for better gradient descent algorithm performance 
   # Return:
-    # 
-  p = ncol(data_X)
-  para_theta = as.vector(rep(0, p))  # initialize theta vector with 0's
-  # check standardization
-  if (standardize = TRUE) {
+    # a list of: 1. estimated theta vector; 2: number of iterations 
+  if (standardize == TRUE) { # check standardization
     data_X_sd = scale(data_X)
-    data_X_sd[, 1] = 1  # make a design matrix by adding a column of 1's
+    data_X_sd = cbind(1, data_X_sd[, -1])  # make a design matrix by adding a column of 1's
   }
   else {
-    print("Warning: Input data matrix X was not standardized.")
+    print(paste("Warning: Input data matrix X was not standardized."))
+    break
   }
+  
+  p = ncol(data_X_sd)
+  para_theta = as.matrix(rep(0, p))  # initialize theta vector with 0's
   
   iter = 0
   for (i in 1:maxiters) {
     para_theta_old = para_theta  # store old theta into another variable 
-    res_direct = (data_X_sd %*% t(para_theta_old)) - res_y  # compute response direction 
-    grad = (res_direct %*% data_X_sd)  # compute gradient
-    para_theta = para_theta_old - gradient * eta  # update estimator
-    
+    res_direct = as.numeric(data_X_sd %*% para_theta_old) - res_y  # compute response direction 
+    gradient = as.numeric(res_direct %*% data_X_sd)  # compute gradient
+    # print(typeof(grad))
+    # print(typeof(eta))
+    para_theta = para_theta_old - eta*gradient  # update estimator
+    # print(para_theta)
     if (iter > maxiters) {
-      print("Algorithm unfinished by reaching the maximum iterations.")
-    }
-    else if (norm(grad) < grad_tol) {
-      print("Algorithm finished by reaching the tolerance.")
+      print(paste("Algorithm unfinished by reaching the maximum iterations."))
       break
     }
-    else {
-      iter = iter + 1
+    print(sqrt(sum((as.vector(para_theta)-as.vector(para_theta_old))^2)))
+    if (sqrt(sum((as.vector(para_theta)-as.vector(para_theta_old))^2)) <= grad_tol) {
+      print(paste("Algorithm finished by reaching the tolerance."))
+      break
     }
+    iter = iter + 1
+    # print(iter)
   }
   return(c(para_theta, iter))
 }
 
-# Apply gradient descent algorithm
+# Apply gradient descent algorithm for training set based on model from part (a)
+res_y_train = src_train$price
+grad_results = gradient_descent(data_X_sd_global, res_y_train)
+
+# Here defined a function for computing the R^2 
+calc_r_square = function(fit_y, res_y) {
+  modelSSR = sum((res_y - fit_y)^2)  # # SSR of dataset
+  mean_res_y = mean(res_y) 
+  modelSSTO = sum((res_y - mean_res_y)^2)  # SSTO of dataset
+  model_r_2 = 1 - (modelSSR / modelSSTO)  # compute r^2
+  return(model_r_2)
+}
+
+# Calculate R^2 of the original model for training set
+gd_train_a = as.numeric(data_X_sd_global %*% as.matrix(grad_results[1:5]))  # X*theta
+gd_train_r_2_a = calc_r_square(gd_train_a, res_y_train)
+print(paste("The R^2 of the original model for training set using gradient descent algorithm = ", gd_train_r_2_a))
+
+
+
+
+
+############ Part (e) ############
+
+
+
+
+
+
+
 
 
 
