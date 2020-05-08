@@ -4,6 +4,7 @@
 # NOTE: please run this code in the directory (folder) of HW2
 
 ############ Problem 2 ############
+library(ggplot2)
 # set working directory
 setwd("./")  # set path to the current directory
 
@@ -345,30 +346,36 @@ sgd_results_train_a = stochastic_gd(cbind(1,scale(data_X_train_a_global[,-1])), 
                                     res_y_train_a, res_y_test, 
                                     1)  # input data X w/o standardization
 
-sgd_train_a = as.numeric(data_X_train_sd_a_global %*% as.matrix(sgd_results_train_a[1:5]))  # X*theta
+sgd_train_a = as.numeric(data_X_train_sd_a_global %*% sgd_results_train_a[[1]])  # X*theta
 sgd_train_r_2_a = calc_r_square(sgd_train_a, scale(res_y_train_a))
 print(paste("The R^2 of the linear model A for training set using SGD = ", sgd_train_r_2_a))
-print(paste("The number of steps to finish the algorithm = ", sgd_results_train_a[6]))
+print(paste("The number of steps to finish the algorithm = ", sgd_results_train_a[2]))
 # output:
 # [1] "The R^2 of the linear model A for training set using SGD =  0.509856890105469"
 # [1] "The number of steps to finish the algorithm =  20157"
 
 # plot loss function
-library(ggplot2)
 plot_data = as.data.frame(sgd_results_train_a[[3]])
-ggplot(plot_data)+geom_line(aes(plot_data$iter_vec, plot_data$loss_train_vec, color = "train")) + 
-  geom_line(aes(plot_data$iter_vec.1, plot_data$loss_test_vec, color = "test"))+
+ggplot(plot_data)+geom_line(aes(plot_data$iter_vec, plot_data$loss_train_vec, color = "train loss")) + 
+  geom_line(aes(plot_data$iter_vec.1, plot_data$loss_test_vec, color = "test loss"))+
   xlab("Iterations") + ylab("Loss")
 
 # Part-e-2: Calculate R^2 of the improved model A for testing set
-sgd_test_a = as.numeric(data_X_test_sd_a_global %*% as.matrix(sgd_results_train_a[1:5]))  # X*theta
-sgd_test_r_2_a = calc_r_square(sgd_test_a, res_y_test)
-print(paste("The R^2 of the improved model A for testing set using SGD = ", sgd_test_r_2_a))
+sgd_test_a = as.numeric(data_X_test_sd_a_global %*% as.matrix(sgd_results_train_a[[1]]))  # X*theta
+sgd_test_r_2_a = calc_r_square(sgd_test_a, scale(res_y_test))
+print(paste("The R^2 of the linear model A for testing set using SGD = ", sgd_test_r_2_a))
 # output:
-# [1] "The R^2 of the improved model A for testing set using SGD =  0.502857392565492"
+# [1] "The R^2 of the linear model A for testing set using SGD =  0.502857392565492"
 
-# Part-e-3: estimate BC's house price based on GD
-bchp_a_sgd = as.numeric(fancy_sd_a_global %*% as.matrix(sgd_results_train_a[1:5])) # Fit for Gates house
+# Part-e-3: estimate BC's house price based on SGD
+fan_features = c('bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'price')
+mean_train = as.matrix(src_train[, fan_features])  # extract target features 
+mean_train = cbind(1, mean_train) 
+mean_global = colMeans(mean_train)
+sd_global = apply(mean_train, 2, sd)
+
+bchp_a_inter = mean_global[6] - mean_global[1:5] %*% sgd_results_train_a[[1]]
+bchp_a_sgd = fancy_sd_a_global %*% sgd_results_train_a[[1]] * sd_global[6] + bchp_a_inter
 print(paste("The estimated BC's house price from linear model A for training set using SGD = ", bchp_a_sgd))
 # output
 # [1] "The estimated BC's house price from linear model A for training set using SGD =  15624675.3834043"
@@ -380,41 +387,53 @@ sgd_results_train_c = stochastic_gd(data_X_train_c_global, data_X_test_sd_c_glob
                                     res_y_train_c, res_y_test, 
                                     1)  # input data X w/o standardization
 
-sgd_train_c = as.numeric(data_X_train_sd_c_global %*% as.matrix(sgd_results_train_c[1:6]))  # X*theta
-sgd_train_r_2_c = calc_r_square(sgd_train_c, res_y_train_c)
+sgd_train_c = as.numeric(data_X_train_sd_c_global %*% as.matrix(sgd_results_train_c[[1]]))  # X*theta
+sgd_train_r_2_c = calc_r_square(sgd_train_c, scale(res_y_train_c))
 print(paste("The R^2 of the improved model C for training set using SGD = ", sgd_train_r_2_c))
-print(paste("The number of steps to finish the algorithm = ", sgd_results_train_c[7]))
+print(paste("The number of steps to finish the algorithm = ", sgd_results_train_c[[2]]))
 
 # output:
 # [1] "The R^2 of the improved model C for training set using SGD =  0.503247973101909"
 # [1] "The number of steps to finish the algorithm =  10000"
 
+# plot loss function
+plot_data = as.data.frame(sgd_results_train_c[[3]])
+ggplot(plot_data)+geom_line(aes(plot_data$iter_vec, plot_data$loss_train_vec, color = "train loss")) + 
+  geom_line(aes(plot_data$iter_vec.1, plot_data$loss_test_vec, color = "test loss"))+
+  xlab("Iterations") + ylab("Loss")
+
 # Part-e-5: Calculate R^2 of the improved model C for testing set
-sgd_test_c = as.numeric(data_X_test_sd_c_global %*% as.matrix(sgd_results_train_c[1:6]))  # X*theta
-sgd_test_r_2_c = calc_r_square(sgd_test_c, res_y_test)
+sgd_test_c = as.numeric(data_X_test_sd_c_global %*% as.matrix(sgd_results_train_c[[1]]))  # X*theta
+sgd_test_r_2_c = calc_r_square(sgd_test_c, scale(res_y_test))
 print(paste("The R^2 of the improved model C for testing set using SGD = ", sgd_test_r_2_c))
 # output:
 # [1] "The R^2 of the improved model C for testing set using SGD =  0.496604307026135"
 
 # Part-e-6: estimate BC's house price based on SGD
-bchp_c_sgd = as.numeric(fancy_sd_c_global %*% as.matrix(sgd_results_train_c[1:6])) # Fit for Gates house
+mean_train = cbind(as.matrix(src_train[, features]), src_train$bedrooms*src_train$bathrooms, src_train$price)  # extract target features 
+mean_train = cbind(1, mean_train) 
+mean_global = colMeans(mean_train)
+sd_global = apply(mean_train, 2, sd)
+
+bchp_c_inter = mean_global[7] - mean_global[1:6] %*% sgd_results_train_c[[1]]
+bchp_c_sgd = fancy_sd_c_global %*% sgd_results_train_c[[1]] * sd_global[7] + bchp_c_inter
 print(paste("The estimated BC's house price from Improved model C for training set using SGD = ", bchp_c_sgd))
 # output
-# [1] "The estimated BC's house price from Improved model C for training set using SGD =  16095069.4894778"
+# [1] "The estimated BC's house price from Improved model C for training set using SGD =  15351339.2310899"
 
 # Summary:
 table_model_A_sgd = data.frame("Tuning Constant C" = 1,
-                           "Actual Iteration Numbers A" = sgd_results_train_a[6], 
-                           "Tolerance A" = 10^(-3),
-                           "Maximum iterations A" = 10^4,
+                           "Actual Iteration Numbers A" = sgd_results_train_a[[2]], 
+                           "Tolerance A" = 10^(-9),
+                           "Maximum iterations A" = 10^5,
                            "Training R^2 A" = sgd_train_r_2_a,
                            "Testing R^2 A" = sgd_train_r_2_c,
                            "BC's house price A" = bchp_a_sgd)
 
 table_model_C_sgd = data.frame("Tuning Constant C" = 1,
-                           "Actual Iteration Numbers C" = sgd_results_train_c[7], 
-                           "Tolerance C" = 10^(-3),
-                           "Maximum iterations C" = 10^4,
+                           "Actual Iteration Numbers C" = sgd_results_train_c[[2]], 
+                           "Tolerance C" = 10^(-9),
+                           "Maximum iterations C" = 10^5,
                            "Training R^2 C" = sgd_test_r_2_a,
                            "Testing R^2 C" = sgd_test_r_2_c,
                            "BC's house price C" = bchp_c_sgd)
