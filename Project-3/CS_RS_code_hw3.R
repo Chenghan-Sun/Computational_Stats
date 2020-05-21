@@ -24,9 +24,11 @@ test_data = matrix(as.integer(conv_test), src_test[2], prod(src_test[3:4]), byro
 close(train_file)
 close(test_file)
 
-# load training / test set labels
-train_labels = Read.mnist('train-labels-idx1-ubyte')
-test_labels = Read.mnist('t10k-labels-idx1-ubyte')
+# data load for training / test set labels
+src_train_labels = Read.mnist('train-labels-idx1-ubyte')
+src_test_labels = Read.mnist('t10k-labels-idx1-ubyte')
+train_labels = src_train_labels$labels
+test_labels = src_test_labels$labels
 
 # Image compression
 img_compress = function(mat, ori_dim=28, new_dim=14){
@@ -48,11 +50,43 @@ img_compress = function(mat, ori_dim=28, new_dim=14){
 train_data_comp = img_compress(train_data)
 test_data_comp = img_compress(test_data)
 
-# view image 
-image(matrix(train_data_comp[1,],14,14,byrow = TRUE))
+# view compressed images
+par(mfrow=c(5,5))
+par(mar=c(0,0,0,0))
+for(i in 1:25){
+  m = matrix(train_data_comp[i,],14,14,byrow = TRUE)
+  image(m[,14:1])
+}
 
-#image(matrix(train_labels$labels[], 14,14,byrow = TRUE))
+# only clustering the digits {0, 1, 2, 3, 4} 
+digits = c(0,1,2,3,4)
+train_data_comp_cluster = train_data_comp[train_labels %in% digits, ]
+train_labels_cluster = train_labels[train_labels %in% digits]
 
+test_data_comp_cluster = test_data_comp[test_labels %in% digits,]
+test_labels_cluster = test_labels[test_labels %in% digits]
 
+# view clustering images
+par(mfrow=c(5,5))
+par(mar=c(0,0,0,0))
+for(i in 1:25){
+  m = matrix(train_data_comp_cluster[i,],14,14,byrow = TRUE)
+  image(m[,14:1])
+}
 
 ############ Problem 3 ############
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
