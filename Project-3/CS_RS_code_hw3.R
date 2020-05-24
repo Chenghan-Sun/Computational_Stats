@@ -161,9 +161,9 @@ sphe_LL_constructor = function(data_X, num_cluster, para_pi, para_mu, para_sigma
   # contrcut loop for log-kernel of normal density 
   for(c in 1:num_cluster){
     kernel = -(t(data_X) - para_mu[c, ])^2 / 2
-    log_term_1 = kernel / para_sigma[c, ]
+    log_term_1 = kernel / para_sigma[c]
     sum_log_term_1 = apply(log_term_1, 2, sum)
-    log_term_2 = -d/2*log(para_sigma[c, ])
+    log_term_2 = -d/2*log(para_sigma[c])
     log_term_3 = log(para_pi[c])
     log_term_4 = -d/2*log(2*pi)
     log_term_tot = sum_log_term_1 + log_term_2 + log_term_3 + log_term_4
@@ -242,12 +242,47 @@ update_para_sigma = function(data_X, num_cluster, matF, updated_mu, gaussians) {
 
 # implement EM - mixture of spherical Gaussians
 # @main EM function 
-EM_sphe_gaus = function(data_X, init_pi, init_mu, init_sigma, tol=0.0001, maxiters=500) {
+EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
   # implement EM - mixture of spherical Gaussians
   # Params:
     # data_X: dataset 
+    # num_cluster: number of clusters
+    # tol: tolerance 
+    # maxiters: maximum number ofiterations
+  # Return:
+    # list of vars: 1-3: updated parameters; 4: matF; 5: log-likelihood
+  # initialize all parameters
+  init_pi = init_para_pi(num_cluster)
+  init_mu = init_para_mu(data_X, num_cluster, init_pi)
+  init_sigma = init_para_sigma(data_X, num_cluster, init_pi, 'sphe')
   
+  # compute log-likelihood
+  sphe_results = sphe_LL_constructor(data_X, num_cluster, init_pi, init_mu, init_sigma)
   
+  # set counter
+  iter = 10
+  diff = 100
+  
+  # while loop for updating rules, ensemble helper functions 
+  while(iter <= maxiters & diff > tol) {
+    process_matF = sphe_results[[1]]
+    process_LL = sphe_results[[2]]
+    new_pi = update_para_pi(process_matF)
+    new_mu = update_para_mu(data_X, para_pi)
+    new_sigma = update_para_sigma(data_X, num_cluster, process_matF, para_mu, 'sphe')
+    
+    new_sphe_results = sphe_LL_constructor(data_X, num_cluster, new_pi, new_mu, new_sigma)
+    new_matF = new_sphe_results[[1]]
+    new_LL = new_sphe_results[[2]]
+    diff = new_LL - process_LL
+    
+    # update 
+    sphe_results = new_sphe_results
+    iter = iter + 1
+  }
+  print(paste('Total number of iterations for EM-spherical Gaussians = ', iter))
+  print(paste('Final log-likelihood for EM-spherical Gaussians = ', sphe_results[[2]]))
+  return(list(new_pi, new_sigma, new_sigma, sphe_results[[1]], sphe_results[[2]]))
 }
 
 
