@@ -125,13 +125,13 @@ init_para_sigma = function(data_X, num_cluster, para_pi, gaussians) {
   # Return:
     # para_sigma: list of initialized parameter sigma
   para_sigma = c()
-  adjust = 0.05
+  adjust = 0.05  # based on hint #2 in HW3
   for(c in 1:num_cluster) {
     if (gaussians == 'sphe'){
       sigma = sd(data_X[c, ])^2
     }
     else if (gaussians == 'diag') {
-      sigma = apply(data_X[c, ], 2, sd)^2 + adjust
+      sigma = apply(data_X[c, ], 2, sd)^2 + adjust  # based on hint #2 in HW3
     }
     para_sigma = cbind(para_sigma, sigma)
   }
@@ -139,15 +139,40 @@ init_para_sigma = function(data_X, num_cluster, para_pi, gaussians) {
 }
 
 # Based on the hints, construct a helper function to compute log-likelihood by matirx Fij
-sphe_matF_constructor = function(X, para_pi, para_mu, para_sigma, ) {
-  # assign a sample xi to a cluster j, implement Matrix Fij
+# @Helper Function 4
+sphe_LL_constructor = function(data_X, num_cluster, para_pi, para_mu, para_sigma) {
+  # compute log-likelihood by matirx Fij
   # Params:
-  # Return: 
-  
-  # 
-  
+    # data_X: dataset 
+    # num_cluster: number of clusters
+    # para_pi: parameter pi
+    # para_mu: parameter mu
+    # para_sigma: parameter sigma
+  # Return:
+    # list of two vars:
+      # 1. Matrix Fij
+      # 2. log-likelihood
+  # implement Matrix Fij as result of Problem 2 Part B
+  log_kernel_F = c()
+  d = ncol(data_X)
+  # contrcut loop for log-kernel of normal density 
+  for(c in 1:num_cluster){
+    kernel = -(t(data_X) - para_mu[c, ])^2 / 2
+    log_term_1 = kernel / para_sigma[c, ]
+    sum_log_term_1 = apply(log_term_1, 2, sum)
+    log_term_2 = -d/2*log(para_sigma[c, ])
+    log_term_3 = log(para_pi[c])
+    log_term_4 = -d/2*log(2*pi)
+    log_term_tot = sum_log_term_1 + log_term_2 + log_term_3 + log_term_4
+    log_kernel_F = cbind(log_kernel_F, log_term_tot)
+  }
+  A = apply(log_kernel_F, 1, max)  # based on hint #1 in HW3
+  kernel_F = exp(log_kernel_F - A)  # based on hint #1 in HW3
+  sum_kernel_F = apply(kernel_F, 1, sum)
+  matF = kernel_F / sum_kernel_F  # final form of matrix Fij
+  LL = sum(log(sum_kernel_F)) + sum(A)  # final form of log-likelihood
+  return(list(matF, LL))
 }
-
 
 
 
