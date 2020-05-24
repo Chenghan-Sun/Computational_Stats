@@ -199,9 +199,8 @@ update_para_mu = function(data_X, matF) {
     # matF: matrix Fij
   # Return:
     # updated_mu: updated parameter mu
-  term_no = matF %*% data_X
-  term_de = apply(matF, 1, sum)
-  updated_mu = term_no / term_de
+  matF_weights = t(matF) / apply(matF, 2, sum)
+  updated_mu = matF_weights %*% data_X
   return(updated_mu)
 }
 
@@ -240,7 +239,7 @@ update_para_sigma = function(data_X, num_cluster, matF, updated_mu, gaussians) {
   return(updated_sigma)
 }
 
-# implement EM - mixture of spherical Gaussians
+# implement EM - mixture of spherical Gaussians algorithm
 # @main EM function 
 EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
   # implement EM - mixture of spherical Gaussians
@@ -268,8 +267,8 @@ EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
     process_matF = sphe_results[[1]]
     process_LL = sphe_results[[2]]
     new_pi = update_para_pi(process_matF)
-    new_mu = update_para_mu(data_X, para_pi)
-    new_sigma = update_para_sigma(data_X, num_cluster, process_matF, para_mu, 'sphe')
+    new_mu = update_para_mu(data_X, process_matF)
+    new_sigma = update_para_sigma(data_X, num_cluster, process_matF, new_mu, 'sphe')
     
     new_sphe_results = sphe_LL_constructor(data_X, num_cluster, new_pi, new_mu, new_sigma)
     new_matF = new_sphe_results[[1]]
@@ -284,6 +283,27 @@ EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
   print(paste('Final log-likelihood for EM-spherical Gaussians = ', sphe_results[[2]]))
   return(list(new_pi, new_sigma, new_sigma, sphe_results[[1]], sphe_results[[2]]))
 }
+
+# now perform the EM - mixture of spherical Gaussians algorithm
+# As required, try 3 random initializations
+
+# @Experiment 1
+EM_sphe_results_1 = EM_sphe_gaus(train_data_comp_cluster, 5)
+
+# @Experiment 2
+EM_sphe_results_2 = EM_sphe_gaus(train_data_comp_cluster, 5)
+
+# @Experiment 3
+EM_sphe_results_3 = EM_sphe_gaus(train_data_comp_cluster, 5)
+
+
+
+
+
+
+
+
+
 
 
 
