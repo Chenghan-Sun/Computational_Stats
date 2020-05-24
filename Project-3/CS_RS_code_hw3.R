@@ -84,7 +84,8 @@ for(i in 1:25){
 
 # First of all, define some helper functions before the EM - spherical Gaussians algorithm
 # Functions to initialize group of parameters for the gaussian kernel
-# @Helper Function 1
+
+# @Helper Function 1 (apply for both algorithms)
 init_para_pi = function(num_cluster) {
   # randomly initialize distribution of parameter pi
   # Params:
@@ -96,7 +97,7 @@ init_para_pi = function(num_cluster) {
   return(init_pi)
 }
 
-# @Helper Function 2
+# @Helper Function 2 (apply for both algorithms)
 init_para_mu = function(data_X, num_cluster, para_pi) {
   # initialize parameter mu (normal distribution) base on parameter pi
   # Params:
@@ -114,7 +115,7 @@ init_para_mu = function(data_X, num_cluster, para_pi) {
   return(t(para_mu))
 }
 
-# @Helper Function 3
+# @Helper Function 3 (apply for both algorithms)
 init_para_sigma = function(data_X, num_cluster, para_pi, gaussians) {
   # initialize parameter sigma (normal distribution) base on parameter pi
   # Params:
@@ -129,17 +130,18 @@ init_para_sigma = function(data_X, num_cluster, para_pi, gaussians) {
   for(c in 1:num_cluster) {
     if (gaussians == 'sphe'){
       sigma = sd(data_X[c, ])^2
+      para_sigma = c(para_sigma, sigma)
     }
     else if (gaussians == 'diag') {
       sigma = apply(data_X[c, ], 2, sd)^2 + adjust  # based on hint #2 in HW3
+      para_sigma = cbind(para_sigma, sigma)
     }
-    para_sigma = cbind(para_sigma, sigma)
   }
   return(t(para_sigma))
 }
 
 # Based on the hints, construct a helper function to compute log-likelihood by matirx Fij
-# @Helper Function 4
+# @Helper Function 4 (only apply for spherical case)
 sphe_LL_constructor = function(data_X, num_cluster, para_pi, para_mu, para_sigma) {
   # compute log-likelihood by matirx Fij
   # Params:
@@ -174,9 +176,68 @@ sphe_LL_constructor = function(data_X, num_cluster, para_pi, para_mu, para_sigma
   return(list(matF, LL))
 }
 
+# Based on the results of Problem 2 Part e M-step for mixture of spherical Gaussians,
+# construct three update functions for parameters
 
+# @Helper Function 5 (apply for both algorithms)
+update_para_pi = function(matF) {
+  # update parameter pi
+  # Params:
+    # matF: matrix Fij
+  # Return:
+    # updated_pi: updated parameter pi
+  updated_pi = apply(matF, 1, mean)
+  return(updated_pi)
+}
 
+# @Helper Function 6 (apply for both algorithms)
+update_para_mu = function(data_X, matF) {
+  # update parameter mu 
+  # Params:
+    # data_X: dataset 
+    # matF: matrix Fij
+  # Return:
+    # updated_mu: updated parameter mu
+  term_no = matF %*% data_X
+  term_de = apply(matF, 1, sum)
+  updated_mu = term_no / term_de
+  return(updated_mu)
+}
 
+# @Helper Function 7 (apply for both algorithms)
+update_para_sigma = function(data_X, num_cluster, matF, updated_mu, gaussians) {
+  # update parameter sigma
+  # Params:
+    # data_X: dataset 
+    # num_cluster: number of clusters
+    # matF: matrix Fij
+    # gaussians: type of gaussians
+    # updated_mu: updated parameter mu
+  # Return:
+    # updated_sigma: updated parameter sigma
+  updated_sigma = c()
+  adjust = 0.05  # based on hint #2 in HW3
+  matF_weights = t(matF) / apply(matF, 2, sum)
+  
+  for(c in 1:num_cluster) {
+    kernel = (t(data_X) - updated_mu[c, ])^2
+    kernel_weight = t(matF_weights)[ ,c]
+    proto_sigma = kernel %*% kernel_weight
+    if (gaussians == 'sphe'){
+      sigma = mean(proto_sigma)
+      updated_sigma = c(updated_sigma, sigma)
+    }
+    else if (gaussians == 'diag') {
+      updated_sigma = cbind(updated_sigma, proto_sigma)
+    }
+  }
+  
+  # based on hint #2 in HW3
+  if (gaussians == 'diag') {
+    updated_sigma = t(updated_sigma) + adjust
+  }
+  return(updated_sigma)
+}
 
 
 
