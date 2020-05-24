@@ -240,7 +240,7 @@ update_para_sigma = function(data_X, num_cluster, matF, updated_mu, gaussians) {
 }
 
 # implement EM - mixture of spherical Gaussians algorithm
-# @main EM function 
+# @main EM function (only apply for spherical case)
 EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
   # implement EM - mixture of spherical Gaussians
   # Params:
@@ -320,6 +320,7 @@ EM_sphe_results_3 = EM_sphe_gaus(train_data_comp_cluster, 5)
 
 # Now make use of the true labels and calculate the error of the algorithm
 # define a function for this task
+# @(only apply for spherical case)
 EM_sphe_labels_pred = function(data_X, train_labels, num_cluster, EM_results) {
   # make use of the true labels and calculate the error of the EM algorithm
   # Workflow: 
@@ -331,7 +332,8 @@ EM_sphe_labels_pred = function(data_X, train_labels, num_cluster, EM_results) {
     # num_cluster: number of clusters
     # EM_results: list of vars: 1-3: updated parameters; 4: matF; 5: log-likelihood
   # Return:
-    # pred_error: prediction error rate 
+    # pred_labels: prediction labels 
+  
   # mapping labels to clusters 
   matF = EM_results[[4]]  # get back output of matrix Fij
   map_labels = c()  # cluster labels list 
@@ -347,21 +349,52 @@ EM_sphe_labels_pred = function(data_X, train_labels, num_cluster, EM_results) {
   new_sphe_results = sphe_LL_constructor(data_X, num_cluster, EM_results[[1]], EM_results[[2]], EM_results[[3]])
   new_matF = new_sphe_results[[1]]
   pred_labels = rep(0, nrow(data_X))
-    for(c in 1:num_cluster) {
-      max_prob_idx = apply(new_matF, 1, max)
-      pred_labels[(new_matF == max_prob_idx)[ ,c]] = map_labels[c]
-    }
-  pred_error = sum(pred_labels != train_labels) / nrow(data_X)
+  for(c in 1:num_cluster) {
+    max_prob_idx = apply(new_matF, 1, max)
+    pred_labels[(new_matF == max_prob_idx)[ ,c]] = map_labels[c]
+  }
+  return(pred_labels)
+}
+
+#@ (apply for both algorithms)
+EM_pred_error =  function(train_data, train_labels, test_labels, pred_labels, verb_dataset) {
+  # Calculate the error rate
+  # Params:
+    # train_data: training set 
+    # train_labels: training data labels 
+    # test_labels: test data labels 
+    # pred_labels: prediction labels 
+    # verb_dataset: verbose training set or test set
+  # Return:
+    # pred_error: prediction error rate
+  n1 = nrow(train_data)
+  n2 = length(test_labels)
+  if (verb_dataset == 'train') {
+    pred_error = sum(pred_labels != train_labels) / n1
+  }
+  else if (verb_dataset == 'test') {
+    pred_error = sum(pred_labels != test_labels) / n2
+  }
   return(pred_error)
 }
 
 # Calculate the error of the EM - mixture of spherical Gaussians algorithm
 
-# @
-trainset_pred_error = EM_sphe_labels_pred(train_data_comp_cluster, 
+# @prediction error rate for training set
+trainset_sphe_pred_labels = EM_sphe_labels_pred(train_data_comp_cluster, 
                                           train_labels_cluster, 5, EM_sphe_results_1)
+trainset_sphe_pred_error = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
+                                         test_labels_cluster, trainset_sphe_pred_labels, 'train')
+# @Output:
+  # 0.127533
 
-
+# @prediction error rate for test set
+testset_sphe_pred_labels = EM_sphe_labels_pred(test_data_comp_cluster, 
+                                               train_labels_cluster, 5, EM_sphe_results_1)
+testset_sphe_pred_error = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
+                                         test_labels_cluster, testset_sphe_pred_labels, 'test')
+# @Output:
+  # 0.1196731
 
 
 
