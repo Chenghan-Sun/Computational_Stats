@@ -263,7 +263,7 @@ EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
   diff = 100
   
   # while loop for updating rules, ensemble helper functions 
-  while(iter <= maxiters & diff > tol) {
+  for(iter in 1:maxiters) {
     process_matF = sphe_results[[1]]
     process_LL = sphe_results[[2]]
     new_pi = update_para_pi(process_matF)
@@ -273,13 +273,24 @@ EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
     new_sphe_results = sphe_LL_constructor(data_X, num_cluster, new_pi, new_mu, new_sigma)
     new_matF = new_sphe_results[[1]]
     new_LL = new_sphe_results[[2]]
-    diff = new_LL - process_LL
+    diff = abs(new_LL - process_LL) / abs(process_LL)
+    
+    # stopping criteria
+    if(diff < tol) {
+      print(paste("Algorithm finished by reaching the tolerance."))
+      print(paste('Total number of iterations for EM-spherical Gaussians = ', iter))
+      break
+    }
+    
+    if(iter >= maxiters) {
+      warning('Algorithm unfinished by reaching the maximum iterations.')
+      break
+    }
     
     # update 
     sphe_results = new_sphe_results
     iter = iter + 1
   }
-  print(paste('Total number of iterations for EM-spherical Gaussians = ', iter))
   print(paste('Final log-likelihood for EM-spherical Gaussians = ', sphe_results[[2]]))
   return(list(new_pi, new_sigma, new_sigma, sphe_results[[1]], sphe_results[[2]]))
 }
@@ -290,16 +301,25 @@ EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
 # @Experiment 1
 EM_sphe_results_1 = EM_sphe_gaus(train_data_comp_cluster, 5)
 
+# @Outputs
+  #[1] "Algorithm finished by reaching the tolerance."
+  #[1] "Total number of iterations for EM-spherical Gaussians =  18"
+  #[1] "Final log-likelihood for EM-spherical Gaussians =  -31831226.1846782"
+
 # @Experiment 2
 EM_sphe_results_2 = EM_sphe_gaus(train_data_comp_cluster, 5)
+
+# @Outputs
 
 # @Experiment 3
 EM_sphe_results_3 = EM_sphe_gaus(train_data_comp_cluster, 5)
 
+# @Outputs
 
 
 
-
+# Now make use of the true labels and calculate the error of the algorithm
+# define a function for this task
 
 
 
