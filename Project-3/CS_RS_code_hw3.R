@@ -117,7 +117,7 @@ init_para_mu = function(data_X, num_cluster, para_pi) {
 
 # @Helper Function 3 (apply for both algorithms)
 init_para_sigma = function(data_X, num_cluster, para_pi, gaussians) {
-  # initialize parameter sigma (normal distribution) base on parameter pi
+  # initialize parameter sigma (normal distribution) base on hint 3 of HW3
   # Params:
     # data_X: data set
     # num_cluster: number of clusters
@@ -187,7 +187,7 @@ update_para_pi = function(matF) {
     # matF: matrix Fij
   # Return:
     # updated_pi: updated parameter pi
-  updated_pi = apply(matF, 1, mean)
+  updated_pi = apply(matF, 2, mean)
   return(updated_pi)
 }
 
@@ -292,7 +292,7 @@ EM_sphe_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
     iter = iter + 1
   }
   print(paste('Final log-likelihood for EM-spherical Gaussians = ', sphe_results[[2]]))
-  return(list(new_pi, new_sigma, new_sigma, sphe_results[[1]], sphe_results[[2]]))
+  return(list(new_pi, new_mu, new_sigma, sphe_results[[1]], sphe_results[[2]]))
 }
 
 # now perform the EM - mixture of spherical Gaussians algorithm
@@ -320,9 +320,46 @@ EM_sphe_results_3 = EM_sphe_gaus(train_data_comp_cluster, 5)
 
 # Now make use of the true labels and calculate the error of the algorithm
 # define a function for this task
+EM_sphe_labels_pred = function(data_X, train_labels, num_cluster, EM_results) {
+  # make use of the true labels and calculate the error of the EM algorithm
+  # Workflow: 
+    # data (n X d) -> matF (n X 5) --> cluster (n X 1) --> map labels (n X 1) 
+    # --> predicted lables (n X 1)
+  # Params:
+    # data_X: dataset 
+    # train_labels: training data labels 
+    # num_cluster: number of clusters
+    # EM_results: list of vars: 1-3: updated parameters; 4: matF; 5: log-likelihood
+  # Return:
+    # pred_error: prediction error rate 
+  # mapping labels to clusters 
+  matF = EM_results[[4]]  # get back output of matrix Fij
+  map_labels = c()  # cluster labels list 
+  for (c in 1:num_cluster) {
+    max_prob_idx = apply(matF, 1, max)
+    true_labels = train_labels[(matF == max_prob_idx)[ ,c]]
+    tab_true_labels = table(true_labels)
+    most_label = names(tab_true_labels)[tab_true_labels == max(tab_true_labels)]
+    map_labels = c(map_labels, most_label)
+  }
+  
+  # predict labels 
+  new_sphe_results = sphe_LL_constructor(data_X, num_cluster, EM_results[[1]], EM_results[[2]], EM_results[[3]])
+  new_matF = new_sphe_results[[1]]
+  pred_labels = rep(0, nrow(data_X))
+    for(c in 1:num_cluster) {
+      max_prob_idx = apply(new_matF, 1, max)
+      pred_labels[(new_matF == max_prob_idx)[ ,c]] = map_labels[c]
+    }
+  pred_error = sum(pred_labels != train_labels) / nrow(data_X)
+  return(pred_error)
+}
 
+# Calculate the error of the EM - mixture of spherical Gaussians algorithm
 
-
+# @
+trainset_pred_error = EM_sphe_labels_pred(train_data_comp_cluster, 
+                                          train_labels_cluster, 5, EM_sphe_results_1)
 
 
 
