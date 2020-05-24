@@ -66,6 +66,8 @@ train_labels_cluster = train_labels[train_labels %in% digits]
 test_data_comp_cluster = test_data_comp[test_labels %in% digits,]
 test_labels_cluster = test_labels[test_labels %in% digits]
 
+# Note: use the above four processed datasets for Part 3 EM algorithm 
+
 # view clustering images
 par(mfrow=c(5,5))
 par(mar=c(0,0,0,0))
@@ -75,9 +77,76 @@ for(i in 1:25){
 }
 
 ############ Problem 3 ############
+# （i): Program the EM algorithm you derived for mixture of spherical Gaussians. Assume 5
+# clusters. Terminate the algorithm when the fractional change of the log-likelihood goes under
+# 0.0001. (Try 3 random initializations and present the best one in terms of maximizing 
+# the likelihood function).
 
+# First of all, define some helper functions before the EM - spherical Gaussians algorithm
+# Functions to initialize group of parameters for the gaussian kernel
+# @Helper Function 1
+init_para_pi = function(num_cluster) {
+  # randomly initialize distribution of parameter pi
+  # Params:
+    # num_cluster: number of clusters
+  # Return:
+    # init_pi: initialized parameter pi with length of num_cluster
+  para_pi = runif(num_cluster)
+  init_pi = para_pi / sum(para_pi)  # weight percents 
+  return(init_pi)
+}
 
+# @Helper Function 2
+init_para_mu = function(data_X, num_cluster, para_pi) {
+  # initialize parameter mu (normal distribution) base on parameter pi
+  # Params:
+    # data_X: data set
+    # num_cluster: number of clusters
+    # para_pi: initialized parameter pi
+  # Return:
+    # para_mu: list of initialized parameter mu
+  para_mu = c()
+  data_idx = sample(1:num_cluster, nrow(data_X), replace=T, prob=para_pi)
+  for(c in 1:num_cluster) {
+    mu = apply(data_X[c, ], 2, mean)
+    para_mu = cbind(para_mu, mu)
+  }
+  return(t(para_mu))
+}
 
+# @Helper Function 3
+init_para_sigma = function(data_X, num_cluster, para_pi, gaussians) {
+  # initialize parameter sigma (normal distribution) base on parameter pi
+  # Params:
+    # data_X: data set
+    # num_cluster: number of clusters
+    # para_pi: initialized parameter pi
+    # gaussians: type of gaussians
+  # Return:
+    # para_sigma: list of initialized parameter sigma
+  para_sigma = c()
+  adjust = 0.05
+  for(c in 1:num_cluster) {
+    if (gaussians == 'sphe'){
+      sigma = sd(data_X[c, ])^2
+    }
+    else if (gaussians == 'diag') {
+      sigma = apply(data_X[c, ], 2, sd)^2 + adjust
+    }
+    para_sigma = cbind(para_sigma, sigma)
+  }
+  return(t(para_sigma))
+}
+
+# Based on the hints, construct a helper function to compute log-likelihood by matirx Fij
+sphe_matF_constructor = function(X, para_pi, para_mu, para_sigma, ) {
+  # assign a sample xi to a cluster j, implement Matrix Fij
+  # Params:
+  # Return: 
+  
+  # 
+  
+}
 
 
 
