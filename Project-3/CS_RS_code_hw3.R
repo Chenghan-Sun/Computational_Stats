@@ -105,14 +105,14 @@ init_para_mu = function(data_X, num_cluster, para_pi) {
     # num_cluster: number of clusters
     # para_pi: initialized parameter pi
   # Return:
-    # para_mu: list of initialized parameter mu
-  para_mu = c()
+    # init_mu: list of initialized parameter mu
+  init_mu = c()
   data_idx = sample(1:num_cluster, nrow(data_X), replace=T, prob=para_pi)
   for(c in 1:num_cluster) {
-    mu = apply(data_X[c, ], 2, mean)
-    para_mu = cbind(para_mu, mu)
+    mu = apply(data_X[data_idx==c, ], 2, mean)
+    init_mu = cbind(init_mu, mu)
   }
-  return(t(para_mu))
+  return(t(init_mu))
 }
 
 # @Helper Function 3 (apply for both algorithms)
@@ -124,20 +124,21 @@ init_para_sigma = function(data_X, num_cluster, para_pi, gaussians) {
     # para_pi: initialized parameter pi
     # gaussians: type of gaussians
   # Return:
-    # para_sigma: list of initialized parameter sigma
-  para_sigma = c()
+    # init_sigma: list of initialized parameter sigma
+  init_sigma = c()
   adjust = 0.05  # based on hint #2 in HW3
+  data_idx = sample(1:num_cluster, nrow(data_X), replace=T, prob=para_pi)
   for(c in 1:num_cluster) {
     if (gaussians == 'sphe'){
       sigma = sd(data_X[c, ])^2
-      para_sigma = c(para_sigma, sigma)
+      init_sigma = c(init_sigma, sigma)  # 1 param
     }
     else if (gaussians == 'diag') {
-      sigma = apply(data_X[c, ], 2, sd)^2 + adjust  # based on hint #2 in HW3
-      para_sigma = cbind(para_sigma, sigma)
+      sigma = apply(data_X[data_idx==c, ], 2, sd)^2 + adjust  # based on hint #2 in HW3
+      init_sigma = cbind(init_sigma, sigma)  # d params
     }
   }
-  return(t(para_sigma))
+  return(t(init_sigma))
 }
 
 # Based on the hints, construct a helper function to compute log-likelihood by matirx Fij
@@ -238,6 +239,17 @@ update_para_sigma = function(data_X, num_cluster, matF, updated_mu, gaussians) {
   }
   return(updated_sigma)
 }
+
+# implement EM - mixture of spherical Gaussians
+# @main EM function 
+EM_sphe_gaus = function(data_X, init_pi, init_mu, init_sigma, tol=0.0001, maxiters=500) {
+  # implement EM - mixture of spherical Gaussians
+  # Params:
+    # data_X: dataset 
+  
+  
+}
+
 
 
 
