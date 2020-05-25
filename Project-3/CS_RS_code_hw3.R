@@ -517,7 +517,41 @@ EM_diag_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
   return(list(new_pi, new_mu, new_sigma, diag_results[[1]], diag_results[[2]]))
 }
 
-
+# @(only apply for diagonol case)
+EM_diag_labels_pred = function(data_X, train_labels, num_cluster, EM_results) {
+  # make use of the true labels and calculate the error of the EM algorithm
+  # Workflow: 
+    # data (n X d) -> matF (n X 5) --> cluster (n X 1) --> map labels (n X 1) 
+    # --> predicted lables (n X 1)
+  # Params:
+    # data_X: dataset 
+    # train_labels: training data labels 
+    # num_cluster: number of clusters
+    # EM_results: list of vars: 1-3: updated parameters; 4: matF; 5: log-likelihood
+  # Return:
+    # pred_labels: prediction labels 
+  
+  # mapping labels to clusters 
+  matF = EM_results[[4]]  # get back output of matrix Fij
+  map_labels = c()  # cluster labels list 
+  for (c in 1:num_cluster) {
+    max_prob_idx = apply(matF, 1, max)
+    true_labels = train_labels[(matF == max_prob_idx)[ ,c]]
+    tab_true_labels = table(true_labels)
+    most_label = names(tab_true_labels)[tab_true_labels == max(tab_true_labels)]
+    map_labels = c(map_labels, most_label)
+  }
+  
+  # predict labels 
+  new_diag_results = diag_LL_constructor(data_X, num_cluster, EM_results[[1]], EM_results[[2]], EM_results[[3]])
+  new_matF = new_diag_results[[1]]
+  pred_labels = rep(0, nrow(data_X))
+  for(c in 1:num_cluster) {
+    max_prob_idx = apply(new_matF, 1, max)
+    pred_labels[(new_matF == max_prob_idx)[ ,c]] = map_labels[c]
+  }
+  return(pred_labels)
+}
 
 
 
