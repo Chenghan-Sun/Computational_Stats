@@ -7,8 +7,6 @@
 ############ Problem 1 ############
 library(readmnist)
 # the MNIST handwritten digit dataset pre-processing
-# set path to the current directory
-setwd("./") 
 
 # data loading for training / test set images
 train_file = file("train-images-idx3-ubyte", "rb")
@@ -51,9 +49,8 @@ train_data_comp = img_compress(train_data)
 test_data_comp = img_compress(test_data)
 
 # view compressed images
-par(mfrow=c(5,5))
-par(mar=c(0,0,0,0))
-for(i in 1:25){
+par(mfrow=c(2,3))
+for(i in 1:6){
   m = matrix(train_data_comp[i,],14,14,byrow = TRUE)
   image(m[,14:1])
 }
@@ -69,9 +66,8 @@ test_labels_cluster = test_labels[test_labels %in% digits]
 # Note: use the above four processed datasets for Part 3 EM algorithm 
 
 # view clustering images
-par(mfrow=c(5,5))
-par(mar=c(0,0,0,0))
-for(i in 1:25){
+par(mfrow=c(2,3))
+for(i in 1:6){
   m = matrix(train_data_comp_cluster[i,],14,14,byrow = TRUE)
   image(m[,14:1])
 }
