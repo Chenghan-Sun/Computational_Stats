@@ -553,9 +553,47 @@ EM_diag_labels_pred = function(data_X, train_labels, num_cluster, EM_results) {
   return(pred_labels)
 }
 
+# now perform the EM - mixture of diagonol Gaussians algorithm
+# As required, try 3 random initializations
 
+# @Experiment 1
+EM_diag_results_1 = EM_diag_gaus(train_data_comp_cluster, 5)
 
+# @Outputs
+  # [1] "Algorithm finished by reaching the tolerance."
+  # [1] "Total number of iterations for EM-diagonol Gaussians =  68"
+  # [1] "Final log-likelihood for EM-diagonol Gaussians =  -16822099.1605583"
 
+# @Experiment 2
+EM_diag_results_2 = EM_diag_gaus(train_data_comp_cluster, 5)
 
+# @Outputs
 
+# @Experiment 3
+EM_diag_results_3 = EM_diag_gaus(train_data_comp_cluster, 5)
+
+# @Outputs
+
+# Calculate the error of the EM - mixture of diagonol Gaussians algorithm
+
+# @prediction error rate for training set
+trainset_diag_pred_labels = EM_diag_labels_pred(train_data_comp_cluster, 
+                                                train_labels_cluster, 5, EM_diag_results_1)
+trainset_diag_pred_error = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
+                                         test_labels_cluster, trainset_diag_pred_labels, 'train')
+# @Output:
+  # 0.5159498
+
+# @prediction error rate for test set
+testset_diag_pred_labels = EM_diag_labels_pred(test_data_comp_cluster, 
+                                               train_labels_cluster, 5, EM_diag_results_1)
+testset_diag_pred_error = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
+                                        test_labels_cluster, testset_diag_pred_labels, 'test')
+# @Output:
+  # 0.5164429
+
+# @Output
+EM_cluster_plot(5, EM_diag_results_1[[2]])
+
+# end of (ii)
 
