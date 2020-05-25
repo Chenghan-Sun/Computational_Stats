@@ -77,7 +77,7 @@ for(i in 1:25){
 }
 
 ############ Problem 3 ############
-# （i): Program the EM algorithm you derived for mixture of spherical Gaussians. Assume 5
+#（i): Program the EM algorithm you derived for mixture of spherical Gaussians. Assume 5
 # clusters. Terminate the algorithm when the fractional change of the log-likelihood goes under
 # 0.0001. (Try 3 random initializations and present the best one in terms of maximizing 
 # the likelihood function).
@@ -375,6 +375,7 @@ EM_pred_error =  function(train_data, train_labels, test_labels, pred_labels, ve
   else if (verb_dataset == 'test') {
     pred_error = sum(pred_labels != test_labels) / n2
   }
+  print(paste('The predictive error rate = ', pred_error))
   return(pred_error)
 }
 
@@ -395,6 +396,73 @@ testset_sphe_pred_error = EM_pred_error(train_data_comp_cluster, train_labels_cl
                                          test_labels_cluster, testset_sphe_pred_labels, 'test')
 # @Output:
   # 0.1196731
+
+# last component, plot section 
+# @(apply for both algorithms)
+EM_cluster_plot = function(num_cluster, final_para_mu) {
+  # visualize clustering result
+  # Params:
+    # num_cluster: number of cluster
+    # final_para_mu: final parameter mu
+  par(mfrow = c(2,3))
+  for (c in 1:num_cluster) {
+    m = matrix(final_para_mu[c, ], 14, 14, byrow=TRUE)
+    image(m, main=paste("cluster = ", c))
+  }
+}
+
+# @Output
+EM_cluster_plot(5, EM_sphe_results_1[[2]])
+
+# end of (i)
+
+
+# (ii) Program the EM algorithm you derived for mixture of diagonal Gaussians. Assume 5
+# clusters. Terminate the algorithm when the fractional change in the log-likelihood goes under
+# 0.0001. (Try 3 random initializations and present the best one in terms of maximizing the
+# likelihood function).
+
+# For this EM - diagonal Gaussians algorithm
+# We update three new functions specifically for this section, other helper functions could be applied 
+# for both algorithms
+
+# @new function 1 (only apply for diagonal case)
+diag_LL_constructor = function(data_X, num_cluster, para_pi, para_mu, para_sigma) {
+  # compute log-likelihood by matirx Fij
+  # Params:
+    # data_X: dataset 
+    # num_cluster: number of clusters
+    # para_pi: parameter pi
+    # para_mu: parameter mu
+    # para_sigma: parameter sigma
+  # Return:
+    # list of two vars:
+      # 1. Matrix Fij
+      # 2. log-likelihood
+  # implement Matrix Fij as result of Problem 2 Part B
+  log_kernel_F = c()
+  d = ncol(data_X)
+  # contrcut loop for log-kernel of normal density 
+  for(c in 1:num_cluster){
+    kernel = -(t(data_X) - para_mu[c, ])^2 / 2
+    log_term_1 = kernel / para_sigma[c, ]
+    sum_log_term_1 = apply(log_term_1, 2, sum)
+    log_term_2 = -1/2*sum(log(para_sigma[c,]))
+    log_term_3 = log(para_pi[c])
+    log_term_4 = -d/2*log(2*pi)
+    log_term_tot = sum_log_term_1 + log_term_2 + log_term_3 + log_term_4
+    log_kernel_F = cbind(log_kernel_F, log_term_tot)
+  }
+  A = apply(log_kernel_F, 1, max)  # based on hint #1 in HW3
+  kernel_F = exp(log_kernel_F - A)  # based on hint #1 in HW3
+  sum_kernel_F = apply(kernel_F, 1, sum)
+  matF = kernel_F / sum_kernel_F  # final form of matrix Fij
+  LL = sum(log(sum_kernel_F)) + sum(A)  # final form of log-likelihood
+  return(list(matF, LL))
+}
+
+
+
 
 
 
