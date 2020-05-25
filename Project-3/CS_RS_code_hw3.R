@@ -461,6 +461,61 @@ diag_LL_constructor = function(data_X, num_cluster, para_pi, para_mu, para_sigma
   return(list(matF, LL))
 }
 
+# implement EM - mixture of diagonal Gaussians algorithm
+# @main EM function (only apply for diagonal case)
+EM_diag_gaus = function(data_X, num_cluster, tol=0.0001, maxiters=500) {
+  # implement EM - mixture of diagonal Gaussians
+  # Params:
+    # data_X: dataset 
+    # num_cluster: number of clusters
+    # tol: tolerance 
+    # maxiters: maximum number ofiterations
+  # Return:
+    # list of vars: 1-3: updated parameters; 4: matF; 5: log-likelihood
+  # initialize all parameters
+  init_pi = init_para_pi(num_cluster)
+  init_mu = init_para_mu(data_X, num_cluster, init_pi)
+  init_sigma = init_para_sigma(data_X, num_cluster, init_pi, 'diag')
+  
+  # compute log-likelihood
+  diag_results = diag_LL_constructor(data_X, num_cluster, init_pi, init_mu, init_sigma)
+  
+  # set counter
+  iter = 10
+  diff = 100
+  
+  # while loop for updating rules, ensemble helper functions 
+  for(iter in 1:maxiters) {
+    process_matF = diag_results[[1]]
+    process_LL = diag_results[[2]]
+    new_pi = update_para_pi(process_matF)
+    new_mu = update_para_mu(data_X, process_matF)
+    new_sigma = update_para_sigma(data_X, num_cluster, process_matF, new_mu, 'diag')
+    
+    new_diag_results = diag_LL_constructor(data_X, num_cluster, new_pi, new_mu, new_sigma)
+    new_matF = new_diag_results[[1]]
+    new_LL = new_diag_results[[2]]
+    diff = abs(new_LL - process_LL) / abs(process_LL)
+    
+    # stopping criteria
+    if(diff < tol) {
+      print(paste("Algorithm finished by reaching the tolerance."))
+      print(paste('Total number of iterations for EM-diagonol Gaussians = ', iter))
+      break
+    }
+    
+    if(iter >= maxiters) {
+      warning('Algorithm unfinished by reaching the maximum iterations.')
+      break
+    }
+    
+    # update 
+    diag_results = new_diag_results
+    iter = iter + 1
+  }
+  print(paste('Final log-likelihood for EM-diagonol Gaussians = ', diag_results[[2]]))
+  return(list(new_pi, new_mu, new_sigma, diag_results[[1]], diag_results[[2]]))
+}
 
 
 
