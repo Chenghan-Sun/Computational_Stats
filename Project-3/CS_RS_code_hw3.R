@@ -2,11 +2,15 @@
 # Problem 1: the MNIST handwritten digit dataset pre-processing 
 # Problem 3: implement the EM algorithm
 # Arthurs: Chenghan Sun, Ran Sun 
-# NOTE: please run this code in the directory (folder) of HW3
+# NOTE: please run this code in the directory (folder) of HW3 with datasets
 
 ############ Problem 1 ############
 library(readmnist)
 # the MNIST handwritten digit dataset pre-processing
+
+# set working directory
+# Please change to your directory 
+setwd("/Users/furinkazan/Box/STA_243/Comp_Stats/Project-3")  # set path to the current directory
 
 # data loading for training / test set images
 train_file = file("train-images-idx3-ubyte", "rb")
@@ -299,24 +303,24 @@ EM_sphe_results_1 = EM_sphe_gaus(train_data_comp_cluster, 5)
 
 # @Outputs
   # [1] "Algorithm finished by reaching the tolerance."
-  # [1] "Total number of iterations for EM-spherical Gaussians =  7"
-  # [1] "Final log-likelihood for EM-spherical Gaussians =  -31901470.2901219"
+  # [1] "Total number of iterations for EM-spherical Gaussians =  8"
+  # [1] "Final log-likelihood for EM-spherical Gaussians =  -31830018.651357"
 
 # @Experiment 2
 EM_sphe_results_2 = EM_sphe_gaus(train_data_comp_cluster, 5)
 
 # @Outputs
   # [1] "Algorithm finished by reaching the tolerance."
-  # [1] "Total number of iterations for EM-spherical Gaussians =  8"
-  # [1] "Final log-likelihood for EM-spherical Gaussians =  -31829286.4670756"
+  # [1] "Total number of iterations for EM-spherical Gaussians =  9"
+  # [1] "Final log-likelihood for EM-spherical Gaussians =  -31832119.9992766"
 
 # @Experiment 3
 EM_sphe_results_3 = EM_sphe_gaus(train_data_comp_cluster, 5)
 
 # @Outputs
   # [1] "Algorithm finished by reaching the tolerance."
-  # [1] "Total number of iterations for EM-spherical Gaussians =  8"
-  # [1] "Final log-likelihood for EM-spherical Gaussians =  -31828383.5241944"
+  # [1] "Total number of iterations for EM-spherical Gaussians =  7"
+  # [1] "Final log-likelihood for EM-spherical Gaussians =  -31903582.8565476"
 
 # From the above tests, Experiment 3 showed MLE
 
@@ -390,7 +394,7 @@ trainset_sphe_pred_labels_1 = EM_sphe_labels_pred(train_data_comp_cluster,
 trainset_sphe_pred_error_1 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                          test_labels_cluster, trainset_sphe_pred_labels_1, 'train')
 # @Output:
-  # [1] "The predictive error rate =  0.260164727415348"
+  # [1] "The predictive error rate =  0.124624133873709"
 
 # @prediction error rate for test set
 testset_sphe_pred_labels_1 = EM_sphe_labels_pred(test_data_comp_cluster, 
@@ -398,7 +402,7 @@ testset_sphe_pred_labels_1 = EM_sphe_labels_pred(test_data_comp_cluster,
 testset_sphe_pred_error_1 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                          test_labels_cluster, testset_sphe_pred_labels_1, 'test')
 # @Output:
-  # [1] "The predictive error rate =  0.260361938120257"
+  # [1] "The predictive error rate =  0.116170461179218"
 
 # @Experiment 2
 # @prediction error rate for training set
@@ -407,7 +411,7 @@ trainset_sphe_pred_labels_2 = EM_sphe_labels_pred(train_data_comp_cluster,
 trainset_sphe_pred_error_2 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                          test_labels_cluster, trainset_sphe_pred_labels_2, 'train')
 # @Output:
-  # [1] "The predictive error rate =  0.12249967315989"
+  # [1] "The predictive error rate =  0.131389724146947"
 
 # @prediction error rate for test set
 testset_sphe_pred_labels_2 = EM_sphe_labels_pred(test_data_comp_cluster, 
@@ -415,7 +419,7 @@ testset_sphe_pred_labels_2 = EM_sphe_labels_pred(test_data_comp_cluster,
 testset_sphe_pred_error_2 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                         test_labels_cluster, testset_sphe_pred_labels_2, 'test')
 # @Output:
-  # [1] "The predictive error rate =  0.112862424596225"
+  # [1] "The predictive error rate =  0.125899980540961"
 
 # @Experiment 3
 # @prediction error rate for training set
@@ -424,7 +428,7 @@ trainset_sphe_pred_labels_3 = EM_sphe_labels_pred(train_data_comp_cluster,
 trainset_sphe_pred_error_3 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                          test_labels_cluster, trainset_sphe_pred_labels_3, 'train')
 # @Output:
-  # [1] "The predictive error rate =  0.124624133873709"
+  # [1] "The predictive error rate =  0.263367760491568"
 
 # @prediction error rate for test set
 testset_sphe_pred_labels_3 = EM_sphe_labels_pred(test_data_comp_cluster, 
@@ -432,7 +436,7 @@ testset_sphe_pred_labels_3 = EM_sphe_labels_pred(test_data_comp_cluster,
 testset_sphe_pred_error_3 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                         test_labels_cluster, testset_sphe_pred_labels_3, 'test')
 # @Output:
-  # [1] "The predictive error rate =  0.116948822728157"
+  # [1] "The predictive error rate =  0.26250243237984"
 
 # last component, plot section 
 # @(apply for both algorithms)
@@ -600,24 +604,24 @@ EM_diag_results_1 = EM_diag_gaus(train_data_comp_cluster, 5)
 
 # @Outputs
   # [1] "Algorithm finished by reaching the tolerance."
-  # [1] "Total number of iterations for EM-diagonol Gaussians =  51"
-  # [1] "Final log-likelihood for EM-diagonol Gaussians =  -16819462.3837943"
+  # [1] "Total number of iterations for EM-diagonol Gaussians =  77"
+  # [1] "Final log-likelihood for EM-diagonol Gaussians =  -16822325.4831917"
 
 # @Experiment 2
 EM_diag_results_2 = EM_diag_gaus(train_data_comp_cluster, 5)
 
 # @Outputs
   # [1] "Algorithm finished by reaching the tolerance."
-  # [1] "Total number of iterations for EM-diagonol Gaussians =  40"
-  # [1] "Final log-likelihood for EM-diagonol Gaussians =  -17268908.4658781"
+  # [1] "Total number of iterations for EM-diagonol Gaussians =  27"
+  # [1] "Final log-likelihood for EM-diagonol Gaussians =  -17415377.5532077"
 
 # @Experiment 3
 EM_diag_results_3 = EM_diag_gaus(train_data_comp_cluster, 5)
 
 # @Outputs
   # [1] "Algorithm finished by reaching the tolerance."
-  # [1] "Total number of iterations for EM-diagonol Gaussians =  29"
-  # [1] "Final log-likelihood for EM-diagonol Gaussians =  -17190460.6155894"
+  # [1] "Total number of iterations for EM-diagonol Gaussians =  28"
+  # [1] "Final log-likelihood for EM-diagonol Gaussians =  -17095928.4702102"
 
 # From the above tests, Experiment 1 showed MLE
 
@@ -630,7 +634,7 @@ trainset_diag_pred_labels_1 = EM_diag_labels_pred(train_data_comp_cluster,
 trainset_diag_pred_error_1 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                          test_labels_cluster, trainset_diag_pred_labels_1, 'train')
 # @Output:
-  # [1] "The predictive error rate =  0.516832265655641"
+  # [1] "The predictive error rate =  0.54219505817754"
 
 # @prediction error rate for test set
 testset_diag_pred_labels_1 = EM_diag_labels_pred(test_data_comp_cluster, 
@@ -638,7 +642,7 @@ testset_diag_pred_labels_1 = EM_diag_labels_pred(test_data_comp_cluster,
 testset_diag_pred_error_1 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                         test_labels_cluster, testset_diag_pred_labels_1, 'test')
 # @Output:
-  # [1] "The predictive error rate =  0.525588635921385"
+  # [1] "The predictive error rate =  0.536874878381008"
 
 # @Experiment 2
 # @prediction error rate for training set
@@ -647,7 +651,7 @@ trainset_diag_pred_labels_2 = EM_diag_labels_pred(train_data_comp_cluster,
 trainset_diag_pred_error_2 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                          test_labels_cluster, trainset_diag_pred_labels_2, 'train')
 # @Output:
-  # [1] "The predictive error rate =  0.55811217152569"
+  # [1] "The predictive error rate =  0.514577068897895"
 
 # @prediction error rate for test set
 testset_diag_pred_labels_2 = EM_diag_labels_pred(test_data_comp_cluster, 
@@ -655,7 +659,7 @@ testset_diag_pred_labels_2 = EM_diag_labels_pred(test_data_comp_cluster,
 testset_diag_pred_error_2 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                         test_labels_cluster, testset_diag_pred_labels_2, 'test')
 # @Output:
-  # [1] "The predictive error rate =  0.555360965168321"
+  # [1] "The predictive error rate =  0.519556333917105"
 
 # @Experiment 3
 # @prediction error rate for training set
@@ -664,7 +668,7 @@ trainset_diag_pred_labels_3 = EM_diag_labels_pred(train_data_comp_cluster,
 trainset_diag_pred_error_3 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                          test_labels_cluster, trainset_diag_pred_labels_3, 'train')
 # @Output:
-  # [1] "The predictive error rate =  0.553144201856452"
+  # [1] "The predictive error rate =  0.579945090861551"
 
 # @prediction error rate for test set
 testset_diag_pred_labels_3 = EM_diag_labels_pred(test_data_comp_cluster, 
@@ -672,7 +676,7 @@ testset_diag_pred_labels_3 = EM_diag_labels_pred(test_data_comp_cluster,
 testset_diag_pred_error_3 = EM_pred_error(train_data_comp_cluster, train_labels_cluster, 
                                         test_labels_cluster, testset_diag_pred_labels_3, 'test')
 # @Output:
-  # [[1] "The predictive error rate =  0.551274567036388"
+  # [1] "The predictive error rate =  0.574041642342868"
 
 # @Output
 EM_cluster_plot(5, EM_diag_results_1[[2]])
