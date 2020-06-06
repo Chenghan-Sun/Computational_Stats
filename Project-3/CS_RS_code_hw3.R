@@ -684,4 +684,3 @@ EM_cluster_plot(5, EM_diag_results_2[[2]])
 EM_cluster_plot(5, EM_diag_results_3[[2]])
 
 # end of (ii)
-
